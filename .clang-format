@@ -1,0 +1,23 @@
+Language: Cpp
+
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+NamespaceIndentation: None
+
+ColumnLimit: 120
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AlwaysBreakTemplateDeclarations: true
+
+DerivePointerAlignment: false
+PointerAlignment: Left
+
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignOperands: true
+
+ReflowComments: true
+SortIncludes: CaseSensitive
+IncludeBlocks: Preserve
