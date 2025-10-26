@@ -73,7 +73,7 @@ public:
   FileLogger(std::FILE* file, Level level, LevelFmtFn fmt_level)
       : file_(file, NO_OPT_DELETER), level_(level), fmt_level_(fmt_level) {}
   FileLogger(std::filesystem::path const& file, Level level, LevelFmtFn fmt_level) noexcept
-      : file_(std::fopen(file.c_str(), "a"), NO_OPT_DELETER), level_(level), fmt_level_(fmt_level) {}
+      : file_(std::fopen(file.c_str(), "a"), FCLOSE_DELETER), level_(level), fmt_level_(fmt_level) {}
 
   auto level() const noexcept -> Level {
     return level_;
