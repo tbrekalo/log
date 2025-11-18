@@ -1,9 +1,6 @@
 # log
 
-Very simple file logger implementation.
-
-## Why
-I wanted to implement ergonomic logging in modern C++ without C-style macros. :) Intended for personal use in toy projects.
+Minimalistic C++ logger implementation.
 
 ### Exapmle
 
@@ -12,26 +9,19 @@ I wanted to implement ergonomic logging in modern C++ without C-style macros. :)
 
 auto main(int, char**) -> int {
   namespace tb = tbrekalo;
-
-  auto run = [](auto& logger) -> void {
-    tb::log::trace<"{}">(logger)(42);
-    tb::log::debug<"{}">(logger)(42);
-    tb::log::info<"{}">(logger)(42);
-    tb::log::warn<"{}">(logger)(42);
-    tb::log::error<"{}">(logger)(42);
-    tb::log::fatal<"{}">(logger)(42);
+  auto sink = [file = std::unique_ptr<std::FILE, decltype([](std::FILE* f) -> void { std::fclose(f); })>(
+                   std::fopen("/tmp/tb-log.txt", "a"))](tb::log::Record record) -> void {
+    tb::log::TTY_SINK(record);
+    std::print(file.get(), "{:%FT%T%z}\t{}\t{}\t{}:{}\t'{}'\n", record.ts, record.pid, std::to_underlying(record.level),
+               record.loc.file_name(), record.loc.line(), record.msg);
+    std::fflush(file.get());
   };
 
-  tb::log::FileLogger tty(stdout, tb::log::Level::TRACE, tb::log::FmtLevelTty);
-  tb::log::FileLogger file("/tmp/log.txt", tb::log::Level::TRACE, tb::log::FmtLevelASCII);
+  tb::log::trace(sink)("{}", 42);
+  tb::log::debug(sink)("{}", 1337);
+  tb::log::info(sink)("{}", "HelloWorld");
 
-  run(tty);
-  run(file);
-
-  return 0;
+  return EXIT_SUCCESS;
 }
-```
 
-### TODO:
-- Callback based logger
-- File roller
+```
