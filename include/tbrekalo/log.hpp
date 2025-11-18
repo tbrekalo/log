@@ -18,10 +18,11 @@ enum class Level : uint8_t { TRACE, DEBUG, INFO, WARN, ERROR, FATAL };
 
 struct Record {
   std::chrono::system_clock::time_point ts;
-  std::source_location loc;
+  pid_t pid;
   std::thread::id thread;
-  std::string msg;
   Level level;
+  std::source_location loc;
+  std::string msg;
 };
 
 template <Level level>
@@ -29,12 +30,16 @@ inline constexpr auto log =
     []<class SinkT> [[gnu::always_inline]] (SinkT&& sink, std::source_location loc = std::source_location::current())
   requires(std::is_lvalue_reference_v<SinkT> && std::is_invocable_r_v<void, SinkT, Record>)
 {
-  return [sink = std::forward<decltype(sink)>(sink),
+  return [&sink = std::forward<decltype(sink)>(sink),
           loc]<class... Args> [[gnu::always_inline]] (std::format_string<Args...> fmt, Args&&... args) {
-    sink(Record{.ts = std::chrono::system_clock::now(),
-                .loc = loc,
-                .msg = std::format(fmt, std::forward<Args>(args)...),
-                .level = level});
+    sink(Record{
+        .ts = std::chrono::system_clock::now(),
+        .pid = getpid(),
+        .thread = std::this_thread::get_id(),
+        .level = level,
+        .loc = loc,
+        .msg = std::format(fmt, std::forward<Args>(args)...),
+    });
   };
 };
 
